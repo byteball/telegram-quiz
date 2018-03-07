@@ -8,8 +8,6 @@ const processOneUser = async (bot) => {
 	try {
 		const isPaymentLimitReached = await db.checkPaymentLimitReached();
 
-		await wait(id);
-
 		if (!isPaymentLimitReached) {
 			const user = await db.getUserPassedQuizNotPaid();
 
