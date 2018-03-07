@@ -4,7 +4,7 @@ const Router = require('telegraf/router');
 const Extra = require('telegraf/extra');
 
 const {getRandomInt, formatTextcoinLink} = require('./utils');
-const questions = require('./questions.json');
+const questions = require('./../questions.json');
 const db = require('./db');
 const wallet = require('./wallet');
 const notifications = require('./notifications');

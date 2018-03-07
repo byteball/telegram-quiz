@@ -32,6 +32,15 @@ exports.sendTextcoins = sendTextcoins;
 
 exports.onReady = () => new Promise((resolve, reject) => {
 	eventBus.on('headless_wallet_ready', () => {
+		// You can use these calls to get headless wallet address to transfer bytes to bot wallet
+		/*
+		headlessWallet.readSingleWallet(wallet => {
+			console.log(`Quiz bot wallet: '${wallet}'`);
+			headlessWallet.readSingleAddress(address => {
+				console.log(`Quiz bot wallet address: '${address}'`);
+			});
+		});
+		*/
 		resolve();
 	});
 });
