@@ -1,3 +1,4 @@
+const schedule = require('node-schedule');
 const Telegraf = require('telegraf');
 const RedisSession = require('telegraf-session-redis');
 const Router = require('telegraf/router');
@@ -7,16 +8,16 @@ const {getRandomInt, formatTextcoinLink} = require('./utils');
 const questions = require('./../questions.json');
 const db = require('./db');
 const wallet = require('./wallet');
-const notifications = require('./notifications');
+const processFailedPayments = require('./process-failed-payments');
 
 const conf = require('../conf');
+const debug = require('debug')(`app:${__filename}`);
 
 const getNextQuestion = (questions, answers) => {
 	const notAnsweredQuestions = questions.filter((question) => answers[question.id] === undefined)
 	if (notAnsweredQuestions.length === 0) {
 		return null;
 	}
-	console.log('getNextQuestion', questions.length, notAnsweredQuestions.length)
 	return notAnsweredQuestions[getRandomInt(0, notAnsweredQuestions.length - 1)];
 }
 
@@ -25,11 +26,9 @@ const isNumberOfRightAnswersValid = (questions, answers) => {
 		.reduce((result, current) => Object.assign(result, {[current.id]: current.solution}), {});
 	const rightAnswersNumber = Object.keys(answers)
 		.filter(questionId => {
-			console.log(answers[questionId], rightAnswers[questionId])
 			return answers[questionId] === rightAnswers[questionId]
 		})
 		.filter(Boolean);
-	console.log('rightAnswersNumber', rightAnswersNumber);
 	return rightAnswersNumber.length >= conf.botRequiredNumberOfRightAnswers;
 }
 
@@ -37,25 +36,24 @@ const markup = (ctx, showAnswer = false) => {
 	const buttons = (m) => {
 		if (showAnswer) {
 			const nextQuestion = getNextQuestion(questions, ctx.session.answers);
-			console.log('nextQuestion', nextQuestion)
 			if (isNumberOfRightAnswersValid(questions, ctx.session.answers)) {
 				return [
 					m.callbackButton(
-						'claim bytes',
+						'Claim bytes',
 						`claim`
 					)
 				];
 			} else if (!nextQuestion) {
 				return [
 					m.callbackButton(
-						'start over',
+						'Start over',
 						`start`
 					)
 				];
 			}
 			return [
 					m.callbackButton(
-					'next question',
+					'Next question',
 					`question:${nextQuestion.id}`
 				)
 			];
@@ -79,7 +77,6 @@ const quiz = new Router(({callbackQuery}) => {
 		return;
 	}
 	const parts = callbackQuery.data.split(':');
-	console.log(parts)
 	const route = parts[0];
 	if (parts.length === 1) {
 		return {
@@ -111,7 +108,6 @@ quiz.on('question', (ctx) => {
 })
 
 quiz.on('answer', (ctx) => {
-	console.log('answer');
 	if (ctx.session.questionId === undefined) {
 		return;
 	}
@@ -119,7 +115,7 @@ quiz.on('answer', (ctx) => {
 		ctx.session.answers[ctx.session.questionId] = ctx.state.answer.id;
 	}
 	return editText(ctx, true)
-})
+});
 
 quiz.on('claim', async (ctx) => {
 	let user;
@@ -129,7 +125,7 @@ quiz.on('claim', async (ctx) => {
 	try {
 		user = await db.findUser(ctx.from.id);
 	} catch (error) {
-		console.log(error);
+		console.error(error);
 	}
 
 	if (!user && isNumberOfRightAnswersValid(questions, ctx.session.answers)) {
@@ -142,7 +138,7 @@ quiz.on('claim', async (ctx) => {
 		try {
 			await db.createUser(user);
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 			message = `Some error occred during saving progress`;
 		}
 	}
@@ -151,24 +147,8 @@ quiz.on('claim', async (ctx) => {
 		message = `You've already received textcoin ${formatTextcoinLink(user.textcoin)}`;
 	} else {
 		try {
-			const currentPayments = await db.getCurrentPayments();
-			console.log('currentPayments', currentPayments);
-			const isPaymentLimitReached = currentPayments + conf.botAmountToSendPerUser >= conf.botDailyLimit;
-			console.log('isPaymentLimitReached', isPaymentLimitReached);
-			if (isPaymentLimitReached) {
-				const isPaymentLimitNotificationSent = await db.isPaymentLimitNotificationSent();
-				if (!isPaymentLimitNotificationSent) {
-					try {
-						notifications.notifyAdmin(
-							'Quiz: daily limit reached',
-							`Quiz:\nCurrent daily payments ${currentPayments}. Limit reached`
-						);
-						await db.storePaymentLimitNotification(currentPayments);
-					} catch (error) {
-						console.log(error);
-					}
-				}
-			} else {
+			const isPaymentLimitReached = await db.checkPaymentLimitReached();
+			if (!isPaymentLimitReached) {
 				textcoin = await wallet.sendTextcoins(ctx.from.id);
 
 				try {
@@ -179,17 +159,18 @@ quiz.on('claim', async (ctx) => {
 						payment_date: textcoin.payment_date,
 					});
 				} catch (error) {
-					console.log(error);
+					console.error(error);
 					message = `Some error occred during saving progress`;
 				}
 				message = `claim textcoin ${formatTextcoinLink(textcoin.textcoin)}`;
+			} else {
+				message = 'Currently payment limit has been reached, we will send you textcoin when new textcoins will be available';
 			}
 		} catch (error) {
 			message = `There was some error during textcoin reward generation. Please try to claim reward later.`;
 		}
 	}
 
-	console.log(ctx.session);
 	if (user && user.textcoin && user.creation_date) {
 		ctx.session = null;
 	}
@@ -200,17 +181,15 @@ quiz.on('claim', async (ctx) => {
 });
 
 const start = async (ctx) => {
-	console.log('start', ctx, ctx.from, ctx.chat);
 	let user;
 	try {
 		user = await db.findUser(ctx.from.id);
 	} catch (error) {
-		console.log(error);
+		console.error(error);
 	}
 
 	ctx.session.questionId = questions[getRandomInt(0, questions.length - 1)].id;
 	ctx.session.answers = {};
-	console.log(questions);
 
 	if (!user) {
 		return ctx.reply(message(ctx, false), markup(ctx, false));
@@ -220,7 +199,7 @@ const start = async (ctx) => {
 			Extra
 				.markdown()
 				.markup((m) => m.inlineKeyboard([m.callbackButton(
-					'start quiz again without reward',
+					'Start quiz again without reward',
 					`question:${ctx.session.questionId}`
 				)], { columns: 3 }))
 		);
@@ -232,24 +211,43 @@ quiz.on('start', start)
 quiz.otherwise((ctx) => ctx.reply('🌯'))
 
 const message = (ctx, showAnswer = false) => {
-	console.log(ctx.session);
 	const question = questions.filter((question) => question.id === ctx.session.questionId)[0];
+	let isUserAnswerCorrect = false;
+	let correctAnswerOption = '';
+	let selectedAnswerOption = '';
 	const answers = question.answers
 		.map((answer) => {
 			const correct = answer.id === question.solution
-				? '👍 '
-				: '❌ ';
-			const selected = showAnswer && answer.id === ctx.session.answers[ctx.session.questionId]
-				? ' 👈'
+				? '\u{2705} '
 				: '';
-			return `${showAnswer ? correct : ''}${answer.option}. ${answer.text}${selected}`
+			const selected = showAnswer && answer.id === ctx.session.answers[ctx.session.questionId]
+				? true
+				: false;
+			if (selected && correct) {
+				isUserAnswerCorrect = true;
+			}
+			if (showAnswer && correct) {
+				correctAnswer = answer.option;
+			}
+			if (selected) {
+				selectedAnswerOption = answer.option;
+			}
+			return `${showAnswer ? correct : ''}${answer.option}. ${answer.text}`
 		})
 		.join('\n');
+	let answerMessage = '';
+	if (showAnswer) {
+		answerMessage = isUserAnswerCorrect
+			? 'Correct!'
+			: `Incorrect *${selectedAnswerOption}*, the right answer is *${correctAnswer}*`;
+	}
 	return `${question.text}
 
 And here are answers:
 
-${answers}`;
+${answers}
+
+${answerMessage}`;
 }
 
 function editText(ctx, showAnswer = false) {
@@ -275,6 +273,8 @@ db.connect()
 		wallet.onReady()
 			.then(() => {
 				bot.startPolling();
+
+				processFailedPayments.run(bot);
 			})
 			.catch((error) => {
 				console.error(error)

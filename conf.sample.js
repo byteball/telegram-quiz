@@ -10,6 +10,7 @@ exports.bLight = true;
 exports.storage = 'sqlite';
 
 //email
+exports.useEmail = true;
 exports.useSmtp = false;
 exports.admin_email = '';
 exports.from_email = '';
@@ -43,5 +44,7 @@ exports.botRequiredNumberOfRightAnswers = 1;
 exports.botAmountToSendPerUser = 1;
 // Amount of bytes set as daily limit
 exports.botDailyLimit = 2;
+// Set in milliseconds
+exports.botCheckForFailedPaymentsDelay = 5000;
 
 console.log('finished quiz conf');

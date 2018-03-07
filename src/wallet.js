@@ -1,10 +1,11 @@
 const eventBus = require('byteballcore/event_bus.js');
 const headlessWallet = require('headless-byteball');
+const constants = require('byteballcore/constants.js');
 const conf = require('../conf');
 
 const sendTextcoins = (id) => new Promise((resolve, reject) => {
 	const address = `textcoin:${id}`;
-	const amount = conf.botAmountToSendPerUser; // bytes
+	const amount = conf.botAmountToSendPerUser + constants.TEXTCOIN_CLAIM_FEE; // bytes
 	const opts = {
 		asset: null,
 		amount,
@@ -13,8 +14,8 @@ const sendTextcoins = (id) => new Promise((resolve, reject) => {
 	};
 
 	headlessWallet.issueChangeAddressAndSendMultiPayment(opts, (err, unit, assocMnemonics) => {
-		console.log(err, unit, assocMnemonics);
 		if (err) {
+			console.error('Textcoin payment error', err)
 			reject(err);
 		} else {
 			const textcoin = assocMnemonics[address];
