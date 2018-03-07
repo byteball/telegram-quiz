@@ -195,7 +195,7 @@ const start = async (ctx) => {
 		return ctx.reply(message(ctx, false), markup(ctx, false));
 	} else {
 		return ctx.reply(
-			`You've already received textcoin ${user.textcoin}`,
+			`You've already received textcoin ${formatTextcoinLink(user.textcoin)}`,
 			Extra
 				.markdown()
 				.markup((m) => m.inlineKeyboard([m.callbackButton(
