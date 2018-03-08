@@ -7,6 +7,7 @@ const debug = require('debug')(`app:${__filename}`);
 const processOneUser = async (bot) => {
 	try {
 		const isPaymentLimitReached = await db.checkPaymentLimitReached();
+		debug('processOneUser', isPaymentLimitReached);
 
 		if (!isPaymentLimitReached) {
 			const user = await db.getUserPassedQuizNotPaid();
@@ -34,7 +35,7 @@ const processOneUser = async (bot) => {
 	setTimeout(() => processOneUser(bot), conf.botCheckForFailedPaymentsDelay);
 };
 
-const run = async (bot) => {
+const run = (bot) => {
 	processOneUser(bot);
 };
 

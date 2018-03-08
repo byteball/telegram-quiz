@@ -20,9 +20,9 @@ const getNextQuestion = (questions, answers) => {
 	return notAnsweredQuestions[getRandomInt(0, notAnsweredQuestions.length - 1)];
 }
 
-const isNumberOfRightAnswersValid = (questions, answers) => {
+const isNumberOfCorrectAnswersEnoughForReward = (questions, answers) => {
 	const rightAnswers = questions
-		.reduce((result, current) => Object.assign(result, {[current.id]: current.solution}), {});
+		.reduce((result, current) => Object.assign(result, { [current.id]: current.solution }), {});
 	const rightAnswersNumber = Object.keys(answers)
 		.filter(questionId => {
 			return answers[questionId] === rightAnswers[questionId]
@@ -35,35 +35,17 @@ const markup = (ctx, showAnswer = false) => {
 	const buttons = (m) => {
 		if (showAnswer) {
 			const nextQuestion = getNextQuestion(questions, ctx.session.answers);
-			if (isNumberOfRightAnswersValid(questions, ctx.session.answers)) {
-				return [
-					m.callbackButton(
-						'Claim bytes',
-						`claim`
-					)
-				];
+			if (isNumberOfCorrectAnswersEnoughForReward(questions, ctx.session.answers)) {
+				return [m.callbackButton('Claim bytes', `claim`)];
 			} else if (!nextQuestion) {
-				return [
-					m.callbackButton(
-						'Start over',
-						`start`
-					)
-				];
+				return [m.callbackButton('Start over', `start`)];
 			}
-			return [
-					m.callbackButton(
-					'Next question',
-					`question:${nextQuestion.id}`
-				)
-			];
+			return [m.callbackButton('Next question', `question:${nextQuestion.id}`)];
 		}
 		const question = questions.filter((question) => question.id === ctx.session.questionId)[0];
 		return question.answers
 			.map((answer) => {
-				return m.callbackButton(
-					answer.option,
-					`answer:${ctx.session.questionId}:${answer.id}`
-				)
+				return m.callbackButton(answer.option, `answer:${ctx.session.questionId}:${answer.id}`);
 			});
 	}
 	return Extra
@@ -71,7 +53,7 @@ const markup = (ctx, showAnswer = false) => {
 		.markup((m) => m.inlineKeyboard(buttons(m), { columns: 3 }))
 }
 
-const quiz = new Router(({callbackQuery}) => {
+const quiz = new Router(({ callbackQuery }) => {
 	if (!callbackQuery.data) {
 		return;
 	}
@@ -102,8 +84,8 @@ quiz.on('question', (ctx) => {
 	if (ctx.session.questionId === undefined) {
 		return;
 	}
-	ctx.session.questionId = ctx.state.questionId
-	return editText(ctx)
+	ctx.session.questionId = ctx.state.questionId;
+	return editText(ctx);
 })
 
 quiz.on('answer', (ctx) => {
@@ -113,7 +95,7 @@ quiz.on('answer', (ctx) => {
 	if (ctx.state.answer) {
 		ctx.session.answers[ctx.session.questionId] = ctx.state.answer.id;
 	}
-	return editText(ctx, true)
+	return editText(ctx, true);
 });
 
 quiz.on('claim', async (ctx) => {
@@ -127,7 +109,7 @@ quiz.on('claim', async (ctx) => {
 		console.error(error);
 	}
 
-	if (!user && isNumberOfRightAnswersValid(questions, ctx.session.answers)) {
+	if (!user && isNumberOfCorrectAnswersEnoughForReward(questions, ctx.session.answers)) {
 		user = {
 			id: ctx.from.id,
 			chat_id: ctx.chat.id,
@@ -176,7 +158,7 @@ quiz.on('claim', async (ctx) => {
 
 	return ctx
 		.editMessageText(message)
-		.catch(() => undefined);
+		.catch(() => console.error(error));
 });
 
 const start = async (ctx) => {
@@ -190,7 +172,7 @@ const start = async (ctx) => {
 	ctx.session.questionId = questions[getRandomInt(0, questions.length - 1)].id;
 	ctx.session.answers = {};
 
-	if (!user) {
+	if (!user || (user && !user.textcoin)) {
 		return ctx.reply(message(ctx, false), markup(ctx, false));
 	} else {
 		return ctx.reply(
@@ -216,22 +198,25 @@ const message = (ctx, showAnswer = false) => {
 	let selectedAnswerOption = '';
 	const answers = question.answers
 		.map((answer) => {
-			const correct = answer.id === question.solution
-				? '\u{2705} '
-				: '';
+			const isCorrect = answer.id === question.solution
+				? true
+				: false;
 			const selected = showAnswer && answer.id === ctx.session.answers[ctx.session.questionId]
 				? true
 				: false;
-			if (selected && correct) {
+			const isCorrectIcon = showAnswer && isCorrect
+				? '\u{2705}\t'
+				: '\u{26AA}\t';
+			if (selected && isCorrect) {
 				isUserAnswerCorrect = true;
 			}
-			if (showAnswer && correct) {
+			if (showAnswer && isCorrect) {
 				correctAnswer = answer.option;
 			}
 			if (selected) {
 				selectedAnswerOption = answer.option;
 			}
-			return `${showAnswer ? correct : ''}${answer.option}. ${answer.text}`
+			return `${isCorrectIcon}${answer.option}.\t${answer.text}`
 		})
 		.join('\n');
 	let answerMessage = '';
@@ -252,7 +237,7 @@ ${answerMessage}`;
 function editText(ctx, showAnswer = false) {
 	return ctx
 		.editMessageText(message(ctx, showAnswer), markup(ctx, showAnswer))
-		.catch(() => undefined)
+		.catch(() => console.error(error));
 }
 
 const bot = new Telegraf(conf.botTelegramToken);
@@ -276,9 +261,9 @@ db.connect()
 				processFailedPayments.run(bot);
 			})
 			.catch((error) => {
-				console.error(error)
+				console.error(error);
 			});
 	})
 	.catch((error) => {
-		console.error(error)
+		console.error(error);
 	});
