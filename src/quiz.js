@@ -10,6 +10,11 @@ const conf = require('../conf');
 const debug = require('debug')(`app:${__filename}`);
 
 const ROUTE_SEPARATOR = ':';
+const ROUTE_ACTION_INDEX = 0;
+const ROUTE_QUESTION_ID_INDEX = 1;
+const ROUTE_ANSWER_ID_INDEX = 2;
+
+const INLINE_KEYBOARD_COLUMNS = 3;
 
 const getNextQuestion = (questions, answers) => {
 	const notAnsweredQuestions = questions.filter((question) => answers[question.id] === undefined);
@@ -48,7 +53,7 @@ const markup = (ctx, showAnswer = false) => {
 
 	return Extra
 		.markdown()
-		.markup((m) => m.inlineKeyboard(buttons(m), { columns: 3 }));
+		.markup((m) => m.inlineKeyboard(buttons(m), { columns: INLINE_KEYBOARD_COLUMNS }));
 };
 
 const quiz = new Router(({ callbackQuery }) => {
@@ -56,15 +61,15 @@ const quiz = new Router(({ callbackQuery }) => {
 		return;
 	}
 	const parts = callbackQuery.data.split(ROUTE_SEPARATOR);
-	const route = parts[0];
+	const route = parts[ROUTE_ACTION_INDEX];
 	debug('Route', route);
 	if (parts.length === 1) {
 		return {
 			route,
 		};
 	}
-	const questionId = parseInt(parts[1], 10);
-	const answerId = parseInt(parts[2], 10);
+	const questionId = parseInt(parts[ROUTE_QUESTION_ID_INDEX], 10);
+	const answerId = parseInt(parts[ROUTE_ANSWER_ID_INDEX], 10);
 	const question = questions.filter((question) => question.id === questionId)[0];
 	if (!question) {
 		return;
@@ -182,7 +187,7 @@ const start = async (ctx) => {
 				.markup((m) => m.inlineKeyboard([m.callbackButton(
 					'Start quiz again without reward',
 					['question', ctx.session.questionId].join(ROUTE_SEPARATOR)
-				)], { columns: 3 }))
+				)], { columns: INLINE_KEYBOARD_COLUMNS }))
 		);
 	}
 };
