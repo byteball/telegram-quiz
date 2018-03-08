@@ -1,4 +1,3 @@
-const schedule = require('node-schedule');
 const Telegraf = require('telegraf');
 const RedisSession = require('telegraf-session-redis');
 const Router = require('telegraf/router');
