@@ -10,12 +10,12 @@ const sendTextcoins = (id) => new Promise((resolve, reject) => {
 		asset: null,
 		amount,
 		to_address: address,
-		email_subject: "Payment in textcoin",
+		email_subject: 'Payment in textcoin',
 	};
 
 	headlessWallet.issueChangeAddressAndSendMultiPayment(opts, (err, unit, assocMnemonics) => {
 		if (err) {
-			console.error('Textcoin payment error', err)
+			console.error('Textcoin payment error', err);
 			reject(err);
 		} else {
 			const textcoin = assocMnemonics[address];
@@ -31,7 +31,7 @@ const sendTextcoins = (id) => new Promise((resolve, reject) => {
 
 exports.sendTextcoins = sendTextcoins;
 
-exports.onReady = () => new Promise((resolve, reject) => {
+exports.onReady = () => new Promise((resolve) => {
 	eventBus.on('headless_wallet_ready', () => {
 		// You can use these calls to get headless wallet address to transfer bytes to bot wallet
 		/*

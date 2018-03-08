@@ -6,7 +6,7 @@ const notifications = require('./notifications');
 const debug = require('debug')(`app:${__filename}`);
 
 exports.findUser = (id) => new Promise((resolve, reject) => {
-	db.query("SELECT * FROM quiz_users WHERE id=?", [id], rows => {
+	db.query('SELECT * FROM quiz_users WHERE id=?', [id], rows => {
 		if (rows.length === 0) {
 			return reject('user ' + id + ' not found');
 		}
@@ -14,7 +14,7 @@ exports.findUser = (id) => new Promise((resolve, reject) => {
 	});
 });
 
-exports.createUser = (item) => new Promise((resolve, reject) => {
+exports.createUser = (item) => new Promise((resolve) => {
 	db.query(
 		`INSERT INTO quiz_users (\n\
 			id, chat_id, unit, textcoin, amount, \n\
@@ -29,13 +29,13 @@ exports.createUser = (item) => new Promise((resolve, reject) => {
 			item.payment_date,
 			item.quiz_pass_date,
 		],
-		(rows) => {
-			resolve()
+		() => {
+			resolve();
 		}
 	);
 });
 
-exports.updateUser = (item, update) => new Promise((resolve, reject) => {
+exports.updateUser = (item, update) => new Promise((resolve) => {
 	const updatedItem = Object.assign({}, item, update);
 	db.query(
 		`INSERT OR REPLACE INTO quiz_users (\n\
@@ -57,15 +57,15 @@ exports.updateUser = (item, update) => new Promise((resolve, reject) => {
 	);
 });
 
-exports.getUserPassedQuizNotPaid = () => new Promise((resolve, reject) => {
-	db.query("SELECT * FROM quiz_users WHERE quiz_pass_date IS NOT NULL AND payment_date IS NULL", rows => {
+exports.getUserPassedQuizNotPaid = () => new Promise((resolve) => {
+	db.query('SELECT * FROM quiz_users WHERE quiz_pass_date IS NOT NULL AND payment_date IS NULL', rows => {
 		return resolve(rows[0]);
 	});
 });
 
-const getCurrentPayments = () => new Promise((resolve, reject) => {
+const getCurrentPayments = () => new Promise((resolve) => {
 	db.query(
-		"SELECT SUM(amount) as sum FROM quiz_users WHERE date(payment_date) = date('now') GROUP BY date(payment_date)",
+		'SELECT SUM(amount) as sum FROM quiz_users WHERE date(payment_date) = date(\'now\') GROUP BY date(payment_date)',
 		rows => {
 			if (rows.length === 0) {
 				return resolve(0);
@@ -76,8 +76,8 @@ const getCurrentPayments = () => new Promise((resolve, reject) => {
 });
 exports.getCurrentPayments = getCurrentPayments;
 
-const checkPaymentLimitNotificationSent = () => new Promise((resolve, reject) => {
-	db.query("SELECT * FROM quiz_admin_notifications WHERE date(creation_date) = date('now')", rows => {
+const checkPaymentLimitNotificationSent = () => new Promise((resolve) => {
+	db.query('SELECT * FROM quiz_admin_notifications WHERE date(creation_date) = date(\'now\')', rows => {
 		if (rows.length === 0) {
 			return resolve(false);
 		}
@@ -86,14 +86,14 @@ const checkPaymentLimitNotificationSent = () => new Promise((resolve, reject) =>
 });
 exports.checkPaymentLimitNotificationSent = checkPaymentLimitNotificationSent;
 
-const storePaymentLimitNotification = (amount) => new Promise((resolve, reject) => {
+const storePaymentLimitNotification = (amount) => new Promise((resolve) => {
 	db.query(
-		`INSERT INTO quiz_admin_notifications (amount) VALUES (?)`,
+		'INSERT INTO quiz_admin_notifications (amount) VALUES (?)',
 		[
 			amount
 		],
-		(rows) => {
-			resolve()
+		() => {
+			resolve();
 		}
 	);
 });
@@ -142,10 +142,10 @@ const migrateDb = (connection, onDone) => {
 	});
 };
 
-exports.connect = () => new Promise((resolve, reject) => {
+exports.connect = () => new Promise((resolve) => {
+	debug('Connecting to db');
 	migrateDb(db, () => {
-		getCurrentPayments();
-		checkPaymentLimitNotificationSent	();
-		resolve()
+		debug('Checked migrations');
+		resolve();
 	});
 });

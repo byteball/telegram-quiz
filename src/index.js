@@ -12,52 +12,53 @@ const processFailedPayments = require('./process-failed-payments');
 const conf = require('../conf');
 const debug = require('debug')(`app:${__filename}`);
 
+const ROUTE_SEPARATOR = ':';
+
 const getNextQuestion = (questions, answers) => {
-	const notAnsweredQuestions = questions.filter((question) => answers[question.id] === undefined)
+	const notAnsweredQuestions = questions.filter((question) => answers[question.id] === undefined);
 	if (notAnsweredQuestions.length === 0) {
 		return null;
 	}
 	return notAnsweredQuestions[getRandomInt(0, notAnsweredQuestions.length - 1)];
-}
+};
 
 const isNumberOfCorrectAnswersEnoughForReward = (questions, answers) => {
 	const rightAnswers = questions
 		.reduce((result, current) => Object.assign(result, { [current.id]: current.solution }), {});
 	const rightAnswersNumber = Object.keys(answers)
-		.filter(questionId => {
-			return answers[questionId] === rightAnswers[questionId]
-		})
+		.filter(questionId => answers[questionId] === rightAnswers[questionId])
 		.filter(Boolean);
 	return rightAnswersNumber.length >= conf.botRequiredNumberOfRightAnswers;
-}
+};
 
 const markup = (ctx, showAnswer = false) => {
 	const buttons = (m) => {
 		if (showAnswer) {
 			const nextQuestion = getNextQuestion(questions, ctx.session.answers);
 			if (isNumberOfCorrectAnswersEnoughForReward(questions, ctx.session.answers)) {
-				return [m.callbackButton('Claim bytes', `claim`)];
+				return [m.callbackButton('Claim bytes', 'claim')];
 			} else if (!nextQuestion) {
-				return [m.callbackButton('Start over', `start`)];
+				return [m.callbackButton('Start over', 'start')];
 			}
-			return [m.callbackButton('Next question', `question:${nextQuestion.id}`)];
+			return [m.callbackButton('Next question', ['question', nextQuestion.id].join(ROUTE_SEPARATOR))];
 		}
 		const question = questions.filter((question) => question.id === ctx.session.questionId)[0];
 		return question.answers
 			.map((answer) => {
-				return m.callbackButton(answer.option, `answer:${ctx.session.questionId}:${answer.id}`);
+				return m.callbackButton(answer.option, ['answer', ctx.session.questionId, answer.id].join(ROUTE_SEPARATOR));
 			});
-	}
+	};
+
 	return Extra
 		.markdown()
-		.markup((m) => m.inlineKeyboard(buttons(m), { columns: 3 }))
-}
+		.markup((m) => m.inlineKeyboard(buttons(m), { columns: 3 }));
+};
 
 const quiz = new Router(({ callbackQuery }) => {
 	if (!callbackQuery.data) {
 		return;
 	}
-	const parts = callbackQuery.data.split(':');
+	const parts = callbackQuery.data.split(ROUTE_SEPARATOR);
 	const route = parts[0];
 	if (parts.length === 1) {
 		return {
@@ -77,7 +78,7 @@ const quiz = new Router(({ callbackQuery }) => {
 			questionId,
 			answer,
 		}
-	}
+	};
 });
 
 quiz.on('question', (ctx) => {
@@ -86,7 +87,7 @@ quiz.on('question', (ctx) => {
 	}
 	ctx.session.questionId = ctx.state.questionId;
 	return editText(ctx);
-})
+});
 
 quiz.on('answer', (ctx) => {
 	if (ctx.session.questionId === undefined) {
@@ -120,7 +121,7 @@ quiz.on('claim', async (ctx) => {
 			await db.createUser(user);
 		} catch (error) {
 			console.error(error);
-			message = `Some error occred during saving progress`;
+			message = 'Some error occred during saving progress';
 		}
 	}
 
@@ -141,14 +142,15 @@ quiz.on('claim', async (ctx) => {
 					});
 				} catch (error) {
 					console.error(error);
-					message = `Some error occred during saving progress`;
+					message = 'Some error occred during saving progress';
 				}
-				message = `claim textcoin ${formatTextcoinLink(textcoin.textcoin)}`;
+				message = `Claim textcoin ${formatTextcoinLink(textcoin.textcoin)}`;
 			} else {
-				message = 'Currently payment limit has been reached, we will send you textcoin when new textcoins will be available';
+				message = 'Currently payment limit has been reached.\n'
+					+ 'We will send you textcoin when new textcoins will be available';
 			}
 		} catch (error) {
-			message = `There was some error during textcoin reward generation. Please try to claim reward later.`;
+			message = 'There was some error during textcoin reward generation. Please try to claim reward later.';
 		}
 	}
 
@@ -158,7 +160,7 @@ quiz.on('claim', async (ctx) => {
 
 	return ctx
 		.editMessageText(message)
-		.catch(() => console.error(error));
+		.catch((error) => console.error(error));
 });
 
 const start = async (ctx) => {
@@ -181,15 +183,15 @@ const start = async (ctx) => {
 				.markdown()
 				.markup((m) => m.inlineKeyboard([m.callbackButton(
 					'Start quiz again without reward',
-					`question:${ctx.session.questionId}`
+					['question', ctx.session.questionId].join(ROUTE_SEPARATOR)
 				)], { columns: 3 }))
 		);
 	}
-}
+};
 
-quiz.on('start', start)
+quiz.on('start', start);
 
-quiz.otherwise((ctx) => ctx.reply('🌯'))
+quiz.otherwise((ctx) => ctx.reply('🌯'));
 
 const message = (ctx, showAnswer = false) => {
 	const question = questions.filter((question) => question.id === ctx.session.questionId)[0];
@@ -211,19 +213,19 @@ const message = (ctx, showAnswer = false) => {
 				isUserAnswerCorrect = true;
 			}
 			if (showAnswer && isCorrect) {
-				correctAnswer = answer.option;
+				correctAnswerOption = answer.option;
 			}
 			if (selected) {
 				selectedAnswerOption = answer.option;
 			}
-			return `${isCorrectIcon}${answer.option}.\t${answer.text}`
+			return `${isCorrectIcon}${answer.option}.\t${answer.text}`;
 		})
 		.join('\n');
 	let answerMessage = '';
 	if (showAnswer) {
 		answerMessage = isUserAnswerCorrect
 			? 'Correct!'
-			: `Incorrect *${selectedAnswerOption}*, the right answer is *${correctAnswer}*`;
+			: `Incorrect *${selectedAnswerOption}*, the right answer is *${correctAnswerOption}*`;
 	}
 	return `${question.text}
 
@@ -232,12 +234,12 @@ And here are answers:
 ${answers}
 
 ${answerMessage}`;
-}
+};
 
 function editText(ctx, showAnswer = false) {
 	return ctx
 		.editMessageText(message(ctx, showAnswer), markup(ctx, showAnswer))
-		.catch(() => console.error(error));
+		.catch((error) => console.error(error));
 }
 
 const bot = new Telegraf(conf.botTelegramToken);
@@ -256,6 +258,8 @@ db.connect()
 	.then(() => {
 		wallet.onReady()
 			.then(() => {
+				debug('Start bot');
+
 				bot.startPolling();
 
 				processFailedPayments.run(bot);
