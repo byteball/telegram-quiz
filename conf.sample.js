@@ -8,9 +8,12 @@ exports.storage = 'sqlite';
 
 //email
 exports.useEmail = true;
-exports.useSmtp = false;
 exports.admin_email = '';
 exports.from_email = '';
+exports.useSmtp = false;
+exports.smtpUser = '';
+exports.smtpPassword = '';
+exports.smtpHost = '';
 
 // exports.hub = 'byteball.org/bb';
 exports.hub = 'byteball.org/bb-test';
