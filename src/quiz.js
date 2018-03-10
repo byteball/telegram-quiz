@@ -16,6 +16,10 @@ const ROUTE_ANSWER_ID_INDEX = 2;
 
 const INLINE_KEYBOARD_COLUMNS = 3;
 
+const USER_SELECTED_ICON = '\u{1F448}';
+const DEFAULT_ANSWER_ICON = '\u{26AA}';
+const CORRECT_ANSWER_ICON = '\u{2705}';
+
 const getNextQuestion = (questions, answers) => {
 	const notAnsweredQuestions = questions.filter((question) => answers[question.id] === undefined);
 	if (notAnsweredQuestions.length === 0) {
@@ -40,7 +44,7 @@ const markup = (ctx, showAnswer = false) => {
 			if (isNumberOfCorrectAnswersEnoughForReward(questions, ctx.session.answers)) {
 				return [m.callbackButton('Claim bytes', 'claim')];
 			} else if (!nextQuestion) {
-				return [m.callbackButton('Start over', 'start')];
+				return [m.callbackButton('Start over', 'start-quiz')];
 			}
 			return [m.callbackButton('Next question', ['question', nextQuestion.id].join(ROUTE_SEPARATOR))];
 		}
@@ -107,6 +111,8 @@ quiz.on('claim', async (ctx) => {
 	let textcoin;
 	let message;
 
+	const startButtonText = 'Start quiz again without reward';
+
 	try {
 		user = await db.findUser(ctx.from.id);
 	} catch (error) {
@@ -162,9 +168,26 @@ quiz.on('claim', async (ctx) => {
 	}
 
 	return ctx
-		.editMessageText(message)
+		.editMessageText(
+			message,
+			Extra
+				.markdown()
+				.markup((m) => m.inlineKeyboard([m.callbackButton(
+					startButtonText,
+					'start-quiz'
+				)], { columns: INLINE_KEYBOARD_COLUMNS }))
+		)
 		.catch((error) => console.error(error));
 });
+
+const startQuiz = async (ctx) => {
+	ctx.session.questionId = questions[getRandomInt(0, questions.length - 1)].id;
+	ctx.session.answers = {};
+
+	return ctx.reply(message(ctx, false), markup(ctx, false));
+};
+
+quiz.on('start-quiz', startQuiz);
 
 const start = async (ctx) => {
 	let user;
@@ -174,27 +197,37 @@ const start = async (ctx) => {
 		console.error(error);
 	}
 
-	ctx.session.questionId = questions[getRandomInt(0, questions.length - 1)].id;
-	ctx.session.answers = {};
-
-	if (!user || (user && !user.textcoin)) {
-		return ctx.reply(message(ctx, false), markup(ctx, false));
-	} else {
-		return ctx.reply(
-			`You've already received textcoin ${formatTextcoinLink(user.textcoin)}`,
-			Extra
-				.markdown()
-				.markup((m) => m.inlineKeyboard([m.callbackButton(
-					'Start quiz again without reward',
-					['question', ctx.session.questionId].join(ROUTE_SEPARATOR)
-				)], { columns: INLINE_KEYBOARD_COLUMNS }))
-		);
+	let message;
+	let startButtonText;
+	if (!user) {
+		message = 'Hello and welcome to Byteball quiz!\n\n'
+			+ 'Here you can answer questions to earn free bytes\n';
+		startButtonText = 'Start quiz';
+	} else if (user && !user.textcoin) {
+		message = 'Hello again and welcome to Byteball quiz!\n\n'
+			+ 'Here you can answer questions to earn free bytes\n'
+			+ 'We\'ve noticed that you\'ve already been here, but for some reason haven\'t received textcoin\n'
+			+ 'Please proceed to get your reward\n';
+		startButtonText = 'Start quiz again';
+	} else if (user && user.textcoin) {
+		message = 'Hello again and welcome to Byteball quiz!\n\n'
+			+ 'Here you can answer questions to earn free bytes\n'
+			+ 'We\'ve noticed that you\'ve already been here and received textcoin\n\n'
+			+ 'Here is textcoin link if you\'ve forgot ' + formatTextcoinLink(user.textcoin) + '\n';
+		startButtonText = 'Start quiz again without reward';
 	}
+	return ctx.reply(
+		message,
+		Extra
+			.markdown()
+			.markup((m) => m.inlineKeyboard([m.callbackButton(
+				startButtonText,
+				'start-quiz'
+			)], { columns: INLINE_KEYBOARD_COLUMNS }))
+	);
 };
 
-quiz.on('start', start);
-
-quiz.otherwise((ctx) => ctx.reply('🌯'));
+quiz.otherwise(start);
 
 const message = (ctx, showAnswer = false) => {
 	const question = questions.filter((question) => question.id === ctx.session.questionId)[0];
@@ -209,9 +242,12 @@ const message = (ctx, showAnswer = false) => {
 			const selected = showAnswer && answer.id === ctx.session.answers[ctx.session.questionId]
 				? true
 				: false;
+			const userSelectedIcon = selected
+				? USER_SELECTED_ICON
+				: '';
 			const isCorrectIcon = showAnswer && isCorrect
-				? '\u{2705}\t'
-				: '\u{26AA}\t';
+				? CORRECT_ANSWER_ICON
+				: DEFAULT_ANSWER_ICON;
 			if (selected && isCorrect) {
 				isUserAnswerCorrect = true;
 			}
@@ -221,7 +257,7 @@ const message = (ctx, showAnswer = false) => {
 			if (selected) {
 				selectedAnswerOption = answer.option;
 			}
-			return `${isCorrectIcon}${answer.option}.\t${answer.text}`;
+			return `${isCorrectIcon}\t${answer.option}.\t${answer.text}\t${userSelectedIcon}`;
 		})
 		.join('\n');
 	let answerMessage = '';
