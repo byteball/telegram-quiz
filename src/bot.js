@@ -1,7 +1,7 @@
 const Telegraf = require('telegraf');
 const RedisSession = require('telegraf-session-redis');
 const {quiz, start} = require('./quiz');
-const conf = require('../conf');
+const conf = require('byteballcore/conf.js');
 
 const bot = new Telegraf(conf.botTelegramToken);
 const session = new RedisSession({

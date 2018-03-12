@@ -15,13 +15,12 @@ exports.smtpUser = '';
 exports.smtpPassword = '';
 exports.smtpHost = '';
 
-// exports.hub = 'byteball.org/bb';
-exports.hub = 'byteball.org/bb-test';
+exports.hub = 'byteball.org/bb';
 exports.deviceName = 'Headless';
 exports.permanent_pairing_secret = '';
 exports.control_addresses = ['DEVICE ALLOWED TO CHAT'];
 // exports.payout_address = 'WHERE THE MONEY CAN BE SENT TO';
-exports.KEYS_FILENAME = 'keys.json';
+// exports.KEYS_FILENAME = 'keys.json';
 
 // where logs are written to (absolute path).  Default is log.txt in app data directory
 //exports.LOG_FILENAME = '/dev/null';

@@ -1,3 +1,7 @@
+// WARNING!
+// It is not recomended way of running bot because of security reason.
+// Make sure you understand what you are doing before sending funds to such setup.
+
 const child_process = require('child_process');
 const path = require('path');
 

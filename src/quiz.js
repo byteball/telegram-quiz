@@ -1,18 +1,21 @@
+const desktopApp = require('byteballcore/desktop_app.js');
 const Router = require('telegraf/router');
 const Extra = require('telegraf/extra');
 
 const {getRandomInt, formatTextcoinLink} = require('./utils');
-const questions = require('./../questions.json');
 const db = require('./db');
 const wallet = require('./wallet');
 
-const conf = require('../conf');
+const conf = require('byteballcore/conf.js');
 const debug = require('debug')(`app:${__filename}`);
+
+const QUESTIONS_FILE_PATH = `${desktopApp.getAppDataDir()}/questions.json`;
+const questions = require(QUESTIONS_FILE_PATH);
 
 const ROUTE_SEPARATOR = ':';
 const ROUTE_ACTION_INDEX = 0;
 const ROUTE_QUESTION_ID_INDEX = 1;
-const ROUTE_ANSWER_ID_INDEX = 2;
+const ROUTE_ANSWER_OPTION_INDEX = 2;
 
 const INLINE_KEYBOARD_COLUMNS = 3;
 
@@ -37,7 +40,7 @@ const isNumberOfCorrectAnswersEnoughForReward = (questions, answers) => {
 	return rightAnswersNumber.length >= conf.botRequiredNumberOfRightAnswers;
 };
 
-const markup = (ctx, showAnswer = false) => {
+const getMarkup = (ctx, showAnswer = false) => {
 	const buttons = (m) => {
 		if (showAnswer) {
 			const nextQuestion = getNextQuestion(questions, ctx.session.answers);
@@ -51,7 +54,7 @@ const markup = (ctx, showAnswer = false) => {
 		const question = questions.filter((question) => question.id === ctx.session.questionId)[0];
 		return question.answers
 			.map((answer) => {
-				return m.callbackButton(answer.option, ['answer', ctx.session.questionId, answer.id].join(ROUTE_SEPARATOR));
+				return m.callbackButton(answer.option, ['answer', ctx.session.questionId, answer.option].join(ROUTE_SEPARATOR));
 			});
 	};
 
@@ -73,12 +76,12 @@ const quiz = new Router(({ callbackQuery }) => {
 		};
 	}
 	const questionId = parseInt(parts[ROUTE_QUESTION_ID_INDEX], 10);
-	const answerId = parseInt(parts[ROUTE_ANSWER_ID_INDEX], 10);
+	const answerOption = parts[ROUTE_ANSWER_OPTION_INDEX];
 	const question = questions.filter((question) => question.id === questionId)[0];
 	if (!question) {
 		return;
 	}
-	const answer = question.answers.filter((answer) => answer.id === answerId)[0];
+	const answer = question.answers.filter((answer) => answer.option === answerOption)[0];
 	return {
 		route,
 		state: {
@@ -101,14 +104,13 @@ quiz.on('answer', (ctx) => {
 		return;
 	}
 	if (ctx.state.answer) {
-		ctx.session.answers[ctx.session.questionId] = ctx.state.answer.id;
+		ctx.session.answers[ctx.session.questionId] = ctx.state.answer.option;
 	}
 	return editText(ctx, true);
 });
 
 quiz.on('claim', async (ctx) => {
 	let user;
-	let textcoin;
 	let message;
 
 	const startButtonText = 'Start quiz again without reward';
@@ -140,20 +142,14 @@ quiz.on('claim', async (ctx) => {
 		try {
 			const isPaymentLimitReached = await db.checkPaymentLimitReached();
 			if (!isPaymentLimitReached) {
-				textcoin = await wallet.sendTextcoins(ctx.from.id);
-
+				let textcoin;
 				try {
-					await db.updateUser(user, {
-						unit: textcoin.unit,
-						textcoin: textcoin.textcoin,
-						amount: textcoin.amount,
-						payment_date: textcoin.payment_date,
-					});
+					textcoin = await wallet.processPayment(user.id);
+					message = `Claim textcoin ${formatTextcoinLink(textcoin.textcoin)}`;
 				} catch (error) {
-					console.error(error);
 					message = 'Some error occred during saving progress';
+					console.error('User update error', error);
 				}
-				message = `Claim textcoin ${formatTextcoinLink(textcoin.textcoin)}`;
 			} else {
 				message = 'Currently payment limit has been reached.\n'
 					+ 'We will send you textcoin when new textcoins will be available';
@@ -184,7 +180,7 @@ const startQuiz = async (ctx) => {
 	ctx.session.questionId = questions[getRandomInt(0, questions.length - 1)].id;
 	ctx.session.answers = {};
 
-	return ctx.reply(message(ctx, false), markup(ctx, false));
+	return ctx.reply(getMessage(ctx, false), getMarkup(ctx, false));
 };
 
 quiz.on('start-quiz', startQuiz);
@@ -229,32 +225,28 @@ const start = async (ctx) => {
 
 quiz.otherwise(start);
 
-const message = (ctx, showAnswer = false) => {
+const getMessage = (ctx, showAnswer = false) => {
 	const question = questions.filter((question) => question.id === ctx.session.questionId)[0];
 	let isUserAnswerCorrect = false;
 	let correctAnswerOption = '';
 	let selectedAnswerOption = '';
 	const answers = question.answers
 		.map((answer) => {
-			const isCorrect = answer.id === question.solution
-				? true
-				: false;
-			const selected = showAnswer && answer.id === ctx.session.answers[ctx.session.questionId]
-				? true
-				: false;
-			const userSelectedIcon = selected
+			const isCorrect = answer.option === question.solution;
+			const isSelected = showAnswer && answer.option === ctx.session.answers[ctx.session.questionId];
+			const userSelectedIcon = isSelected
 				? USER_SELECTED_ICON
 				: '';
 			const isCorrectIcon = showAnswer && isCorrect
 				? CORRECT_ANSWER_ICON
 				: DEFAULT_ANSWER_ICON;
-			if (selected && isCorrect) {
+			if (isSelected && isCorrect) {
 				isUserAnswerCorrect = true;
 			}
 			if (showAnswer && isCorrect) {
 				correctAnswerOption = answer.option;
 			}
-			if (selected) {
+			if (isSelected) {
 				selectedAnswerOption = answer.option;
 			}
 			return `${isCorrectIcon}\t${answer.option}.\t${answer.text}\t${userSelectedIcon}`;
@@ -277,7 +269,7 @@ ${answerMessage}`;
 
 function editText(ctx, showAnswer = false) {
 	return ctx
-		.editMessageText(message(ctx, showAnswer), markup(ctx, showAnswer))
+		.editMessageText(getMessage(ctx, showAnswer), getMarkup(ctx, showAnswer))
 		.catch((error) => console.error(error));
 }
 

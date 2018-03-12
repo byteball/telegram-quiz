@@ -7,13 +7,15 @@ Quiz to test your yteball knowledge.
 - You need node and npm 8+ installed.
 - Run `npm install` to install dependencies
 - You need to install redis for bot sessions
-- You need to have mail server to receive daily payments notifications
-- Copy `conf.sample.js` to `conf.js`
-- Copy `questions.sample.json` to `questions.json` (It's sample questions,
+- You need to have mail server to receive daily payments notifications (for example setup gmail smtp access).
+	Although you can disable email usage altogether with `useEmail` option
+- You can check most of the available options in `conf.js`.
+	Check options in `conf.js` and make sure all is set right.
+	To override these settings add options to `conf.json` in app data dir.
+- Copy `questions.sample.json` from app root to `questions.json` in app data dir (It's sample questions,
 	feel free to add or edit `questions.json` according to your needs, but keep original structure and field names,
 	so that bot could use questions)
-- Check options in `conf.js` and make sure all is set right
-- Run `npm start` to start bot
+- Run `npm start` to start bot.
 - If you don't see any errors in console try to write a message to your bot (`/start`)
 
 ## Test payments on test net
@@ -35,3 +37,12 @@ Quiz to test your yteball knowledge.
 	});
 	```
 	Be careful because it will throw errors if there are more than one wallet or addresses
+
+## Run bow with pm2
+
+When you start bot with `npm start` you will be asked to provide passphrase for bot wallet.
+You can check out `testnet-index.js` script in app root where you can see example of how to start bot with providing passphrase
+from file.
+
+__WARNING!__ It is not recomended way of running bot because of security reason.
+Make sure you understand what you are doing before sending funds to such setup.
