@@ -1,6 +1,5 @@
 const async = require('async');
 const startOfDay = require('date-fns/start_of_day');
-const endOfDay = require('date-fns/end_of_day');
 const db = require('byteballcore/db.js');
 const constants = require('byteballcore/constants.js');
 const conf = require('byteballcore/conf.js');
@@ -72,27 +71,28 @@ exports.getUserPassedQuizNotPaid = () => new Promise((resolve) => {
 	);
 });
 
-const getCurrentPayments = (from, to) => new Promise((resolve) => {
+const getCurrentPayments = (from) => new Promise((resolve) => {
 	db.query(
-		`SELECT amount
-			FROM quiz_users WHERE payment_date >= ${db.getFromUnixTime('?')} AND payment_date <= ${db.getFromUnixTime('?')}`,
-		[from, to],
+		`SELECT SUM(amount) as sum
+			FROM quiz_users WHERE payment_date >= ${db.getFromUnixTime('?')}
+			GROUP BY date(payment_date)`,
+		[from],
 		rows => {
-			const result = rows
-				.map(row => row.amount)
-				.reduce((result, current) => result + current, 0);
+			const result = rows.length
+				? rows[0].sum
+				: 0;
 			resolve(result);
 		}
 	);
 });
 exports.getCurrentPayments = getCurrentPayments;
 
-const checkPaymentLimitNotificationSent = (from, to) => new Promise((resolve) => {
+const checkPaymentLimitNotificationSent = (from) => new Promise((resolve) => {
 	db.query(
 		`SELECT *
 		FROM quiz_admin_notifications
-		WHERE creation_date >= ${db.getFromUnixTime('?')} AND creation_date <= ${db.getFromUnixTime('?')}`,
-		[from, to],
+		WHERE creation_date >= ${db.getFromUnixTime('?')}`,
+		[from],
 		rows => {
 			if (rows.length === 0) {
 				return resolve(false);
@@ -119,12 +119,11 @@ exports.storePaymentLimitNotification = storePaymentLimitNotification;
 exports.checkPaymentLimitReached = async () => {
 	const now = new Date();
 	const from = Math.floor(startOfDay(now).getTime() / 1000);
-	const to = Math.floor(endOfDay(now).getTime() / 1000);
-	const currentPayments = await getCurrentPayments(from, to);
+	const currentPayments = await getCurrentPayments(from);
 	const amountToSend = conf.botAmountToSendPerUser + constants.TEXTCOIN_CLAIM_FEE;
 	const isPaymentLimitReached = currentPayments + amountToSend >= conf.botDailyLimit;
 	if (isPaymentLimitReached) {
-		const isPaymentLimitNotificationSent = await checkPaymentLimitNotificationSent(from, to);
+		const isPaymentLimitNotificationSent = await checkPaymentLimitNotificationSent(from);
 		if (!isPaymentLimitNotificationSent) {
 			try {
 				notifications.notifyAdmin(
