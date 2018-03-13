@@ -1,0 +1,29 @@
+{
+  "name": "telegram-quiz",
+  "version": "1.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/byteball/telegram-quiz"
+  },
+  "main": "./src/index.js",
+  "scripts": {
+    "lint": "eslint ./src ./conf.sample.js ./questions.sample.json",
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^2.6.0",
+    "date-fns": "^1.29.0",
+    "debug": "^3.1.0",
+    "emailjs": "^2.0.0",
+    "headless-byteball": "git+https://github.com/byteball/headless-byteball.git#master",
+    "telegraf": "^3.19.0",
+    "telegraf-session-redis": "^5.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.18.2"
+  }
+}
