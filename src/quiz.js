@@ -138,7 +138,7 @@ quiz.on('claim', async (ctx) => {
 
 	if (user && user.textcoin) {
 		message = `You've already received textcoin ${formatTextcoinLink(user.textcoin)}`;
-	} else {
+	} else if (user && user.quiz_pass_date) {
 		try {
 			const isPaymentLimitReached = await db.checkPaymentLimitReached();
 			if (!isPaymentLimitReached) {
