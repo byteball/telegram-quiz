@@ -1,6 +1,6 @@
-# Byteball Quiz Bot
+# telegram-quiz
 
-Quiz to test your yteball knowledge.
+Telegram chatbot that allows users to pass a quiz and get some Bytes
 
 ## Installation
 
