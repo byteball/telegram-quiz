@@ -2,6 +2,10 @@
   "name": "telegram-quiz",
   "version": "1.0.0",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/byteball/telegram-quiz"
+  },
   "main": "./src/index.js",
   "scripts": {
     "lint": "eslint ./src ./conf.sample.js ./questions.sample.json",
