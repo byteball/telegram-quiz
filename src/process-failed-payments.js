@@ -1,6 +1,6 @@
 const db = require('./db');
 const wallet = require('./wallet');
-const {formatTextcoinLink} = require('./utils');
+const {formatTextcoinMessage} = require('./utils');
 const conf = require('byteballcore/conf.js');
 const debug = require('debug')(`app:${__filename}`);
 
@@ -14,9 +14,9 @@ const processOneUser = async (bot) => {
 
 			if (user) {
 				try {
-					const textcoin = await wallet.processPayment(user.id);
+					const objTextcoin = await wallet.processPayment(user.id);
 
-					const message = `Claim textcoin ${formatTextcoinLink(textcoin.textcoin)}`;
+					const message = formatTextcoinMessage(objTextcoin.textcoin);
 
 					bot.telegram.sendMessage(user.chat_id, message);
 				} catch (error) {

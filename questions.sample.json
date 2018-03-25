@@ -3,6 +3,7 @@
 		"id": 0,
 		"text": "This is 0 Byteball question",
 		"solution": "c",
+		"comment": "Why this answer, link to more info", 
 		"answers": [
 			{
 				"option": "a",
@@ -22,6 +23,7 @@
 		"id": 1,
 		"text": "This is 1 Byteball question",
 		"solution": "b",
+		"comment": "Why this answer, link to more info", 
 		"answers": [
 			{
 				"option": "a",
@@ -37,6 +39,7 @@
 		"id": 2,
 		"text": "This is 2 Byteball question",
 		"solution": "a",
+		"comment": "Why this answer, link to more info", 
 		"answers": [
 			{
 				"option": "a",
@@ -52,6 +55,7 @@
 		"id": 3,
 		"text": "This is 3 Byteball question",
 		"solution": "b",
+		"comment": "Why this answer, link to more info", 
 		"answers": [
 			{
 				"option": "a",
@@ -83,6 +87,7 @@
 		"id": 4,
 		"text": "This is 4 Byteball question",
 		"solution": "b",
+		"comment": "Why this answer, link to more info", 
 		"answers": [
 			{
 				"option": "a",
@@ -110,6 +115,7 @@
 		"id": 5,
 		"text": "This is 5 Byteball question",
 		"solution": "c",
+		"comment": "Why this answer, link to more info", 
 		"answers": [
 			{
 				"option": "a",
@@ -137,6 +143,7 @@
 		"id": 6,
 		"text": "This is 6 Byteball question",
 		"solution": "b",
+		"comment": "Why this answer, link to more info", 
 		"answers": [
 			{
 				"option": "a",
@@ -156,6 +163,7 @@
 		"id": 7,
 		"text": "This is 7 Byteball question",
 		"solution": "c",
+		"comment": "Why this answer, link to more info", 
 		"answers": [
 			{
 				"option": "a",
@@ -179,6 +187,7 @@
 		"id": 8,
 		"text": "This is 8 Byteball question",
 		"solution": "b",
+		"comment": "Why this answer, link to more info", 
 		"answers": [
 			{
 				"option": "a",
@@ -198,6 +207,7 @@
 		"id": 9,
 		"text": "This is 9 Byteball question",
 		"solution": "e",
+		"comment": "Why this answer, link to more info", 
 		"answers": [
 			{
 				"option": "a",

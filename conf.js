@@ -2,6 +2,7 @@
 //exports.myUrl = 'wss://mydomain.com/bb';
 exports.bServeAsHub = false;
 exports.bLight = true;
+exports.bSingleAddress = true;
 
 // Database
 exports.storage = 'sqlite';
@@ -16,7 +17,7 @@ exports.smtpPassword = '';
 exports.smtpHost = '';
 
 exports.hub = 'byteball.org/bb';
-exports.deviceName = 'Headless';
+exports.deviceName = 'Telegram Quiz';
 exports.permanent_pairing_secret = '';
 exports.control_addresses = ['DEVICE ALLOWED TO CHAT'];
 // exports.payout_address = 'WHERE THE MONEY CAN BE SENT TO';
@@ -38,12 +39,12 @@ exports.botRedisSessionPort = '6379';
 exports.botTelegramToken = '';
 
 // Number of right answers user should answer before receiving reward
-exports.botRequiredNumberOfRightAnswers = 1;
+exports.botRequiredNumberOfRightAnswers = 6;
 // Amount of bytes sent to user as a reward
-exports.botAmountToSendPerUser = 1;
+exports.botRewardInUSD = 5;
 // Amount of bytes set as daily limit
-exports.botDailyLimit = 2;
+exports.botDailyLimit = 1e9;
 // Set in milliseconds
-exports.botCheckForFailedPaymentsDelay = 5000;
+exports.botCheckForFailedPaymentsDelay = 60*1000;
 
 console.log('finished quiz conf');

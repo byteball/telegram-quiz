@@ -2,7 +2,7 @@ const desktopApp = require('byteballcore/desktop_app.js');
 const Router = require('telegraf/router');
 const Extra = require('telegraf/extra');
 
-const {getRandomInt, formatTextcoinLink} = require('./utils');
+const {getRandomInt, formatTextcoinLink, formatTextcoinMessage, escapeMarkdown} = require('./utils');
 const db = require('./db');
 const wallet = require('./wallet');
 
@@ -132,30 +132,26 @@ quiz.on('claim', async (ctx) => {
 			await db.createUser(user);
 		} catch (error) {
 			console.error(error);
-			message = 'Some error occred during saving progress';
+			message = 'Some error occured during saving';
 		}
 	}
 
 	if (user && user.textcoin) {
-		message = `You've already received textcoin ${formatTextcoinLink(user.textcoin)}`;
+		message = `You've already received your textcoin ${formatTextcoinLink(user.textcoin)}`;
 	} else if (user && user.quiz_pass_date) {
-		try {
-			const isPaymentLimitReached = await db.checkPaymentLimitReached();
-			if (!isPaymentLimitReached) {
-				let textcoin;
-				try {
-					textcoin = await wallet.processPayment(user.id);
-					message = `Claim textcoin ${formatTextcoinLink(textcoin.textcoin)}`;
-				} catch (error) {
-					message = 'Some error occred during saving progress';
-					console.error('User update error', error);
-				}
-			} else {
-				message = 'Currently payment limit has been reached.\n'
-					+ 'We will send you textcoin when new textcoins will be available';
+		const isPaymentLimitReached = await db.checkPaymentLimitReached();
+		if (!isPaymentLimitReached) {
+			let objTextcoin;
+			try {
+				objTextcoin = await wallet.processPayment(user.id);
+				message = formatTextcoinMessage(objTextcoin.textcoin);
+			} catch (error) {
+				message = 'There was an error while trying to send your textcoin. We\'ll automatically retry until the textcoin is sent.';
+				console.error('User update error', error);
 			}
-		} catch (error) {
-			message = 'There was some error during textcoin reward generation. Please try to claim reward later.';
+		} else {
+			message = 'Daily quota has been reached.\n'
+				+ 'We will send your textcoin when the quota clears';
 		}
 	}
 
@@ -193,23 +189,21 @@ const start = async (ctx) => {
 		console.error(error);
 	}
 
-	let message;
+	let welcome = 'Hello and welcome to Byteball quiz!\n\n'
+		+ `Here you can answer questions about Byteball and earn $${conf.botRewardInUSD.toLocaleString([], {minimumFractionDigits: 2})} in Bytes for correctly answering the questions. If you have difficulties answering any questions, find help on our website https://byteball.org, wiki https://wiki.byteball.org, and Telegram group @byteball\n\n`;
+	let message = welcome;
 	let startButtonText;
 	if (!user) {
-		message = 'Hello and welcome to Byteball quiz!\n\n'
-			+ 'Here you can answer questions to earn free bytes\n';
 		startButtonText = 'Start quiz';
 	} else if (user && !user.textcoin) {
-		message = 'Hello again and welcome to Byteball quiz!\n\n'
-			+ 'Here you can answer questions to earn free bytes\n'
-			+ 'We\'ve noticed that you\'ve already been here, but for some reason haven\'t received textcoin\n'
+		message += 
+			'We\'ve noticed that you\'ve already been here, but for some reason haven\'t received your reward\n'
 			+ 'Please proceed to get your reward\n';
 		startButtonText = 'Start quiz again';
 	} else if (user && user.textcoin) {
-		message = 'Hello again and welcome to Byteball quiz!\n\n'
-			+ 'Here you can answer questions to earn free bytes\n'
-			+ 'We\'ve noticed that you\'ve already been here and received textcoin\n\n'
-			+ 'Here is textcoin link if you\'ve forgot ' + formatTextcoinLink(user.textcoin) + '\n';
+		message +=
+			'We\'ve noticed that you\'ve already been here and earned your textcoin.\n\n'
+			+ 'Here is your textcoin link again ' + formatTextcoinLink(user.textcoin) + '\n';
 		startButtonText = 'Start quiz again without reward';
 	}
 	return ctx.reply(
@@ -256,11 +250,12 @@ const getMessage = (ctx, showAnswer = false) => {
 	if (showAnswer) {
 		answerMessage = isUserAnswerCorrect
 			? 'Correct!'
-			: `Incorrect *${selectedAnswerOption}*, the right answer is *${correctAnswerOption}*`;
+			: `Sorry, the correct answer is *${correctAnswerOption}*.`;
+		answerMessage += ' ' + escapeMarkdown(question.comment);
+		if (isNumberOfCorrectAnswersEnoughForReward(questions, ctx.session.answers))
+			answerMessage += '\n\nCongratulations, you answered the required number of questions and earned a reward!';
 	}
 	return `${question.text}
-
-And here are answers:
 
 ${answers}
 

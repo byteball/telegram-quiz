@@ -1,7 +1,6 @@
 const async = require('async');
 const startOfDay = require('date-fns/start_of_day');
 const db = require('byteballcore/db.js');
-const constants = require('byteballcore/constants.js');
 const conf = require('byteballcore/conf.js');
 const notifications = require('./notifications');
 const debug = require('debug')(`app:${__filename}`);
@@ -73,9 +72,8 @@ exports.getUserPassedQuizNotPaid = () => new Promise((resolve) => {
 
 const getCurrentPayments = (from) => new Promise((resolve) => {
 	db.query(
-		`SELECT SUM(amount) as sum
-			FROM quiz_users WHERE payment_date >= ${db.getFromUnixTime('?')}
-			GROUP BY date(payment_date)`,
+		`SELECT SUM(amount) AS sum
+			FROM quiz_users WHERE payment_date >= ${db.getFromUnixTime('?')}`,
 		[from],
 		rows => {
 			const result = rows.length
@@ -120,8 +118,7 @@ exports.checkPaymentLimitReached = async () => {
 	const now = new Date();
 	const from = Math.floor(startOfDay(now).getTime() / 1000);
 	const currentPayments = await getCurrentPayments(from);
-	const amountToSend = conf.botAmountToSendPerUser + constants.TEXTCOIN_CLAIM_FEE;
-	const isPaymentLimitReached = currentPayments + amountToSend >= conf.botDailyLimit;
+	const isPaymentLimitReached = currentPayments >= conf.botDailyLimit;
 	if (isPaymentLimitReached) {
 		const isPaymentLimitNotificationSent = await checkPaymentLimitNotificationSent(from);
 		if (!isPaymentLimitNotificationSent) {

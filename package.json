@@ -1,7 +1,7 @@
 {
   "name": "telegram-quiz",
   "version": "1.0.0",
-  "description": "",
+  "description": "Telegram chatbot that allows users to pass a quiz and get some Bytes",
   "repository": {
     "type": "git",
     "url": "https://github.com/byteball/telegram-quiz"
@@ -16,10 +16,12 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.6.0",
+    "byteballcore": "git+https://github.com/byteball/byteballcore.git",
     "date-fns": "^1.29.0",
     "debug": "^3.1.0",
     "emailjs": "^2.0.0",
     "headless-byteball": "git+https://github.com/byteball/headless-byteball.git#master",
+    "request": "^2.83.0",
     "telegraf": "^3.19.0",
     "telegraf-session-redis": "^5.0.0"
   },

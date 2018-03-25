@@ -1,9 +1,10 @@
-const bot = require('./bot');
 const processFailedPayments = require('./process-failed-payments');
 const db = require('./db');
 const wallet = require('./wallet');
 
 const debug = require('debug')(`app:${__filename}`);
+
+process.on('unhandledRejection', up => { throw up; });
 
 db.connect()
 	.then(() => {
@@ -11,14 +12,9 @@ db.connect()
 			.then(() => {
 				debug('Start bot');
 
+				const bot = require('./bot');
 				bot.startPolling();
 
 				processFailedPayments.run(bot);
-			})
-			.catch((error) => {
-				console.error(error);
 			});
-	})
-	.catch((error) => {
-		console.error(error);
 	});
