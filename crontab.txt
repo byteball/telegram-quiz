@@ -1,0 +1,1 @@
+*/20 * * * * cd telegram-quiz; node check_daemon.js 1>>~/.config/telegram-quiz/check_daemon.log 2>>~/.config/telegram-quiz/check_daemon.err
