@@ -16,7 +16,7 @@ exports.findUser = (id) => new Promise((resolve, reject) => {
 
 exports.createUser = (item) => new Promise((resolve) => {
 	db.query(
-		`INSERT INTO quiz_users (\n\
+		`INSERT ${db.getIgnore()} INTO quiz_users (\n\
 			id, chat_id, unit, textcoin, amount, \n\
 			payment_date, quiz_pass_date \n\
 		) VALUES (?,?,?,?,?,${db.getFromUnixTime('?')},${db.getFromUnixTime('?')})`,
