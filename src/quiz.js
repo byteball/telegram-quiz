@@ -265,7 +265,7 @@ ${answerMessage}`;
 function editText(ctx, showAnswer = false) {
 	return ctx
 		.editMessageText(getMessage(ctx, showAnswer), getMarkup(ctx, showAnswer))
-		.catch((error) => console.error(error));
+		.catch((error) => {} /*console.error(error)*/);
 }
 
 exports.quiz = quiz;
