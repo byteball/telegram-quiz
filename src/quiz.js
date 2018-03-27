@@ -176,7 +176,7 @@ const startQuiz = async (ctx) => {
 	ctx.session.questionId = questions[getRandomInt(0, questions.length - 1)].id;
 	ctx.session.answers = {};
 
-	return ctx.reply(getMessage(ctx, false), getMarkup(ctx, false));
+	return ctx.reply(getMessage(ctx, false), getMarkup(ctx, false)).catch( (error) => console.error('startQuiz', error) );
 };
 
 quiz.on('start-quiz', startQuiz);
@@ -214,7 +214,7 @@ const start = async (ctx) => {
 				startButtonText,
 				'start-quiz'
 			)], { columns: INLINE_KEYBOARD_COLUMNS }))
-	);
+	).catch( (error) => console.error('start', error) );
 };
 
 quiz.otherwise(start);
