@@ -169,7 +169,7 @@ quiz.on('claim', async (ctx) => {
 					'start-quiz'
 				)], { columns: INLINE_KEYBOARD_COLUMNS }))
 		)
-		.catch((error) => console.error(error));
+		.catch((error) => {} /*console.error(error)*/);
 });
 
 const startQuiz = async (ctx) => {
