@@ -18,7 +18,7 @@ const processOneUser = async (bot) => {
 
 					const message = formatTextcoinMessage(objTextcoin.textcoin);
 
-					bot.telegram.sendMessage(user.chat_id, message);
+					bot.telegram.sendMessage(user.chat_id, message).catch( (error) => console.error('processOneUser', error) );
 				} catch (error) {
 					console.error('Textcoin generation error', error);
 				}
