@@ -82,9 +82,17 @@ exports.onReady = () => new Promise((resolve) => {
 	eventBus.on('headless_and_rates_ready', () => {
 		const headlessWallet = require('headless-byteball');
 		headlessWallet.readSingleAddress(address => {
-			console.log(`=== Quiz bot wallet address: ${address}`);
+			
+			function reclaimUnclaimedTextcoins(){
+				var wallet = require('byteballcore/wallet.js');
+				wallet.claimBackOldTextcoins(address, 3);
+			}
+			setInterval(reclaimUnclaimedTextcoins, 24*3600*1000);
+			
 			const split = require('headless-byteball/split.js');
 			split.startCheckingAndSplittingLargestOutput(address);
+			
+			console.log(`=== Quiz bot wallet address: ${address}`);
 		});
 		resolve();
 	});
