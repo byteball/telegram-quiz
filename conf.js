@@ -27,7 +27,7 @@ exports.control_addresses = ['DEVICE ALLOWED TO CHAT'];
 //exports.LOG_FILENAME = '/dev/null';
 
 // consolidate unspent outputs when there are too many of them.  Value of 0 means do not try to consolidate
-exports.MAX_UNSPENT_OUTPUTS = 0;
+exports.MAX_UNSPENT_OUTPUTS = 100;
 exports.CONSOLIDATION_INTERVAL = 3600*1000;
 
 // Quiz bot settings
