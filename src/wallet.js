@@ -89,9 +89,6 @@ exports.onReady = () => new Promise((resolve) => {
 			}
 			setInterval(reclaimUnclaimedTextcoins, 24*3600*1000);
 			
-			const split = require('headless-byteball/split.js');
-			split.startCheckingAndSplittingLargestOutput(address);
-			
 			console.log(`=== Quiz bot wallet address: ${address}`);
 		});
 		resolve();
