@@ -19,7 +19,6 @@
     "ocore": "git+https://github.com/byteball/ocore.git",
     "date-fns": "^1.29.0",
     "debug": "^3.1.0",
-    "emailjs": "^2.0.0",
     "headless-obyte": "git+https://github.com/byteball/headless-obyte.git#master",
     "request": "^2.83.0",
     "telegraf": "^3.19.0",

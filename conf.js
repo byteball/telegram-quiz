@@ -11,7 +11,6 @@ exports.storage = 'sqlite';
 exports.useEmail = true;
 exports.admin_email = '';
 exports.from_email = '';
-exports.useSmtp = false;
 exports.smtpUser = '';
 exports.smtpPassword = '';
 exports.smtpHost = '';
