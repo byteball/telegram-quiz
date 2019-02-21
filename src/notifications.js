@@ -1,5 +1,5 @@
-const conf = require('byteballcore/conf.js');
-const mail = require('byteballcore/mail.js');
+const conf = require('ocore/conf.js');
+const mail = require('ocore/mail.js');
 const emailjs = require('emailjs');
 
 let server;

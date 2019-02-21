@@ -1,4 +1,4 @@
-const desktopApp = require('byteballcore/desktop_app.js');
+const desktopApp = require('ocore/desktop_app.js');
 const Router = require('telegraf/router');
 const Extra = require('telegraf/extra');
 
@@ -6,7 +6,7 @@ const {getRandomInt, formatTextcoinLink, formatTextcoinMessage, escapeMarkdown} 
 const db = require('./db');
 const wallet = require('./wallet');
 
-const conf = require('byteballcore/conf.js');
+const conf = require('ocore/conf.js');
 const debug = require('debug')(`app:${__filename}`);
 
 const QUESTIONS_FILE_PATH = `${desktopApp.getAppDataDir()}/questions.json`;
@@ -189,8 +189,8 @@ const start = async (ctx) => {
 		console.error(error);
 	}
 
-	let welcome = 'Hello and welcome to Byteball quiz!\n\n'
-		+ `Here you can answer questions about Byteball and earn $${conf.botRewardInUSD.toLocaleString([], {minimumFractionDigits: 2})} in Bytes for correctly answering the questions. If you have difficulties answering any questions, find help on our website https://byteball.org, wiki https://wiki.byteball.org, and Telegram group @byteball\n\n`;
+	let welcome = 'Hello and welcome to Obyte quiz!\n\n'
+		+ `Here you can answer questions about Obyte and earn $${conf.botRewardInUSD.toLocaleString([], {minimumFractionDigits: 2})} in Bytes for correctly answering the questions. If you have difficulties answering any questions, find help on our website https://obyte.org, wiki https://wiki.obyte.org, and Telegram group @obyteorg\n\n`;
 	let message = welcome;
 	let startButtonText;
 	if (!user) {

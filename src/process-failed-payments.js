@@ -1,7 +1,7 @@
 const db = require('./db');
 const wallet = require('./wallet');
 const {formatTextcoinMessage} = require('./utils');
-const conf = require('byteballcore/conf.js');
+const conf = require('ocore/conf.js');
 const debug = require('debug')(`app:${__filename}`);
 
 const processOneUser = async (bot) => {

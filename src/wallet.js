@@ -1,7 +1,7 @@
-const eventBus = require('byteballcore/event_bus.js');
-const constants = require('byteballcore/constants.js');
-const mutex = require('byteballcore/mutex.js');
-const conf = require('byteballcore/conf.js');
+const eventBus = require('ocore/event_bus.js');
+const constants = require('ocore/constants.js');
+const mutex = require('ocore/mutex.js');
+const conf = require('ocore/conf.js');
 const db = require('./db');
 const conversion = require('./conversion');
 
@@ -15,7 +15,7 @@ const sendTextcoin = (id) => new Promise((resolve, reject) => {
 		email_subject: 'Payment in textcoin',
 	};
 
-	const headlessWallet = require('headless-byteball');
+	const headlessWallet = require('headless-obyte');
 	headlessWallet.issueChangeAddressAndSendMultiPayment(opts, (err, unit, assocMnemonics) => {
 		if (err) {
 			console.error('Textcoin payment error', err);
@@ -80,11 +80,11 @@ exports.processPayment = processPayment;
 
 exports.onReady = () => new Promise((resolve) => {
 	eventBus.on('headless_and_rates_ready', () => {
-		const headlessWallet = require('headless-byteball');
+		const headlessWallet = require('headless-obyte');
 		headlessWallet.readSingleAddress(address => {
 			
 			function reclaimUnclaimedTextcoins(){
-				var wallet = require('byteballcore/wallet.js');
+				var wallet = require('ocore/wallet.js');
 				wallet.claimBackOldTextcoins(address, 3);
 			}
 			setInterval(reclaimUnclaimedTextcoins, 24*3600*1000);

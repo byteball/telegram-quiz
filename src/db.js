@@ -1,7 +1,7 @@
 const async = require('async');
 const startOfDay = require('date-fns/start_of_day');
-const db = require('byteballcore/db.js');
-const conf = require('byteballcore/conf.js');
+const db = require('ocore/db.js');
+const conf = require('ocore/conf.js');
 const notifications = require('./notifications');
 const debug = require('debug')(`app:${__filename}`);
 
