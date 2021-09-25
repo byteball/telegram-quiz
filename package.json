@@ -26,5 +26,8 @@
   },
   "devDependencies": {
     "eslint": "^4.18.2"
-  }
+  },
+	"resolutions": {
+		"level-rocksdb": "^4.0.0"
+	}
 }
