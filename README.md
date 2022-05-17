@@ -18,15 +18,15 @@ Telegram chatbot that allows users to pass a quiz and get some Bytes
 - Run `npm start` to start bot.
 - If you don't see any errors in console try to write a message to your bot (`/start`)
 
-## Test payments on test net
+## Test payments on testnet
 
-- You can get test net client and claim some testnet bytes for testing [here](https://byteball.org/testnet.html)
-- When you start bot it starts [headless-byteball](https://github.com/byteball/headless-byteball)
-- Here is a [fix](https://github.com/byteball/headless-byteball/issues/2) for connecting headless-byteball to testnet
+- You can get testnet client and claim some testnet bytes for testing [here](https://obyte.org/testnet)
+- When you start the bot it starts [headless-obyte](https://github.com/byteball/headless-obyte)
+- To enable testnet, place an `.env` file with `testnet=1` in the root folder
 
-## Transfer bytes to bot
+## Transfer bytes to the bot
 
-- To transfer bytes to headless wallet you could use [these instructions](https://github.com/byteball/headless-byteball#remote-control)
+- To transfer bytes to headless wallet you could use [these instructions](https://github.com/byteball/headless-obyte#remote-control)
 - If you have trouble with pairing with remote device you could try to use this code to get wallet address
 	```
 	headlessWallet.readSingleWallet(wallet => {
@@ -40,9 +40,9 @@ Telegram chatbot that allows users to pass a quiz and get some Bytes
 
 ## Run bow with pm2
 
-When you start bot with `npm start` you will be asked to provide passphrase for bot wallet.
-You can check out `testnet-index.js` script in app root where you can see example of how to start bot with providing passphrase
-from file.
+When you start the bot with `npm start` you will be asked to provide a passphrase for the bot's wallet.
+You can check out `testnet-index.js` script in the app root where you can see example of how to start the bot with a passphrase
+read from a file.
 
-__WARNING!__ It is not recomended way of running bot because of security reason.
-Make sure you understand what you are doing before sending funds to such setup.
+__WARNING!__ It is not recomended way of running the bot because of security concerns.
+Make sure you understand what you are doing before sending funds to such a setup.

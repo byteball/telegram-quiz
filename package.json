@@ -19,7 +19,7 @@
     "ocore": "git+https://github.com/byteball/ocore.git",
     "date-fns": "^1.29.0",
     "debug": "^3.1.0",
-    "headless-obyte": "git+https://github.com/byteball/headless-obyte.git#master",
+    "headless-obyte": "git+https://github.com/byteball/headless-obyte.git",
     "request": "^2.83.0",
     "telegraf": "^3.19.0",
     "telegraf-session-redis": "^5.0.0"

@@ -1,7 +1,7 @@
 [
 	{
 		"id": 0,
-		"text": "This is 0 Byteball question",
+		"text": "This is 0 Obyte question",
 		"solution": "c",
 		"comment": "Why this answer, link to more info", 
 		"answers": [
@@ -21,7 +21,7 @@
 	},
 	{
 		"id": 1,
-		"text": "This is 1 Byteball question",
+		"text": "This is 1 Obyte question",
 		"solution": "b",
 		"comment": "Why this answer, link to more info", 
 		"answers": [
@@ -37,7 +37,7 @@
 	},
 	{
 		"id": 2,
-		"text": "This is 2 Byteball question",
+		"text": "This is 2 Obyte question",
 		"solution": "a",
 		"comment": "Why this answer, link to more info", 
 		"answers": [
@@ -53,7 +53,7 @@
 	},
 	{
 		"id": 3,
-		"text": "This is 3 Byteball question",
+		"text": "This is 3 Obyte question",
 		"solution": "b",
 		"comment": "Why this answer, link to more info", 
 		"answers": [
@@ -85,7 +85,7 @@
 	},
 	{
 		"id": 4,
-		"text": "This is 4 Byteball question",
+		"text": "This is 4 Obyte question",
 		"solution": "b",
 		"comment": "Why this answer, link to more info", 
 		"answers": [
@@ -113,7 +113,7 @@
 	},
 	{
 		"id": 5,
-		"text": "This is 5 Byteball question",
+		"text": "This is 5 Obyte question",
 		"solution": "c",
 		"comment": "Why this answer, link to more info", 
 		"answers": [
@@ -141,7 +141,7 @@
 	},
 	{
 		"id": 6,
-		"text": "This is 6 Byteball question",
+		"text": "This is 6 Obyte question",
 		"solution": "b",
 		"comment": "Why this answer, link to more info", 
 		"answers": [
@@ -161,7 +161,7 @@
 	},
 	{
 		"id": 7,
-		"text": "This is 7 Byteball question",
+		"text": "This is 7 Obyte question",
 		"solution": "c",
 		"comment": "Why this answer, link to more info", 
 		"answers": [
@@ -185,7 +185,7 @@
 	},
 	{
 		"id": 8,
-		"text": "This is 8 Byteball question",
+		"text": "This is 8 Obyte question",
 		"solution": "b",
 		"comment": "Why this answer, link to more info", 
 		"answers": [
@@ -205,7 +205,7 @@
 	},
 	{
 		"id": 9,
-		"text": "This is 9 Byteball question",
+		"text": "This is 9 Obyte question",
 		"solution": "e",
 		"comment": "Why this answer, link to more info", 
 		"answers": [
