@@ -4,6 +4,7 @@ const mutex = require('ocore/mutex.js');
 const conf = require('ocore/conf.js');
 const db = require('./db');
 const conversion = require('./conversion');
+const headlessWallet = require('headless-obyte');
 
 const sendTextcoin = (id) => new Promise((resolve, reject) => {
 	const address = `textcoin:${id}`;
